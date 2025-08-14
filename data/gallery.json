@@ -1,6 +1,6 @@
 {
-  "baseUrl": "https://raw.githubusercontent.com/Miguel080902/CodeaMiningMultiMedia/main/images",
-  "backgroundImage": "https://raw.githubusercontent.com/Miguel080902/CodeaMiningMultiMedia/main/images/backgrounds/tech-circuit-pattern.png",
+  "baseUrl": "https://raw.githubusercontent.com/Miguel080902/CodeaMiningMultiMedia/master/images",
+  "backgroundImage": "https://raw.githubusercontent.com/Miguel080902/CodeaMiningMultiMedia/master/images/backgrounds/tech-circuit-pattern.png",
   "images": [
     {
       "id": "1",
