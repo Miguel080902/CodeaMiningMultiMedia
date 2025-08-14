@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODEa Mining Gallery - Administración</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🏔️ CODEa Mining Gallery</h1>
+                <h2>Panel de Administración</h2>
+                <p>Ingresa tu token de GitHub para continuar</p>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="github-token">GitHub Personal Access Token</label>
+                    <input 
+                        type="password" 
+                        id="github-token" 
+                        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                        required
+                    >
+                    <small>
+                        <a href="https://github.com/settings/tokens" target="_blank">
+                            ¿Cómo obtener un token?
+                        </a>
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="log-in"></i>
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="login-info">
+                <h3>ℹ️ Información</h3>
+                <ul>
+                    <li>Necesitas un Personal Access Token de GitHub</li>
+                    <li>El token debe tener permisos de <code>repo</code></li>
+                    <li>Solo usuarios autorizados pueden acceder</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="admin-app" class="admin-app" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🏔️ CODEa Mining Gallery</h1>
+                    <span class="subtitle">Panel de Administración</span>
+                </div>
+                <div class="header-right">
+                    <span id="user-info" class="user-info"></span>
+                    <button id="logout-btn" class="btn-secondary">
+                        <i data-lucide="log-out"></i>
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <div class="nav-content">
+                <button class="nav-btn active" data-tab="gallery">
+                    <i data-lucide="image"></i>
+                    Galería
+                </button>
+                <button class="nav-btn" data-tab="upload">
+                    <i data-lucide="upload"></i>
+                    Subir Imagen
+                </button>
+                <button class="nav-btn" data-tab="settings">
+                    <i data-lucide="settings"></i>
+                    Configuración
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Gallery Tab -->
+            <div id="gallery-tab" class="tab-content active">
+                <div class="tab-header">
+                    <h2>Gestión de Galería</h2>
+                    <div class="tab-actions">
+                        <div class="search-box">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="search-images" placeholder="Buscar imágenes...">
+                        </div>
+                        <select id="filter-category" class="filter-select">
+                            <option value="">Todas las categorías</option>
+                            <option value="evento">Evento</option>
+                            <option value="keynotes">Keynotes</option>
+                            <option value="ponentes">Ponentes</option>
+                            <option value="testimonios">Testimonios</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="gallery-stats">
+                    <div class="stat-card">
+                        <i data-lucide="image"></i>
+                        <div>
+                            <span class="stat-number" id="total-images">0</span>
+                            <span class="stat-label">Total Imágenes</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i data-lucide="calendar"></i>
+                        <div>
+                            <span class="stat-number" id="evento-count">0</span>
+                            <span class="stat-label">Evento</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i data-lucide="presentation"></i>
+                        <div>
+                            <span class="stat-number" id="keynotes-count">0</span>
+                            <span class="stat-label">Keynotes</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i data-lucide="users"></i>
+                        <div>
+                            <span class="stat-number" id="ponentes-count">0</span>
+                            <span class="stat-label">Ponentes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="gallery-grid" class="gallery-grid">
+                    <!-- Images will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="upload-tab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Subir Nueva Imagen</h2>
+                </div>
+                
+                <form id="upload-form" class="upload-form">
+                    <div class="upload-section">
+                        <div class="file-upload-area" id="file-upload-area">
+                            <i data-lucide="upload-cloud"></i>
+                            <h3>Arrastra una imagen aquí o haz clic para seleccionar</h3>
+                            <p>Formatos soportados: JPG, PNG, WebP (máx. 5MB)</p>
+                            <input type="file" id="image-file" accept="image/*" hidden>
+                        </div>
+                        
+                        <div id="image-preview" class="image-preview" style="display: none;">
+                            <img id="preview-img" alt="Vista previa">
+                            <button type="button" id="remove-image" class="btn-remove">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="image-title">Título*</label>
+                            <input type="text" id="image-title" required placeholder="Ej: Dr. Juan Pérez">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image-category">Categoría*</label>
+                            <select id="image-category" required>
+                                <option value="">Seleccionar categoría</option>
+                                <option value="evento">Evento</option>
+                                <option value="keynotes">Keynotes</option>
+                                <option value="ponentes">Ponentes</option>
+                                <option value="testimonios">Testimonios</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="image-alt">Texto alternativo*</label>
+                            <input type="text" id="image-alt" required placeholder="Descripción de la imagen para accesibilidad">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="image-description">Descripción</label>
+                            <textarea id="image-description" placeholder="Descripción detallada (opcional)"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image-folder">Carpeta</label>
+                            <input type="text" id="image-folder" placeholder="Ej: keynotes" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image-filename">Nombre del archivo</label>
+                            <input type="text" id="image-filename" placeholder="Se generará automáticamente" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="reset-form" class="btn-secondary">
+                            <i data-lucide="rotate-ccw"></i>
+                            Limpiar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i data-lucide="upload"></i>
+                            Subir Imagen
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Configuración</h2>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Configuración del Repositorio</h3>
+                    <div class="setting-item">
+                        <label>URL Base de Imágenes</label>
+                        <input type="text" id="base-url" readonly>
+                    </div>
+                    <div class="setting-item">
+                        <label>Imagen de Fondo</label>
+                        <input type="text" id="background-image" readonly>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Acciones</h3>
+                    <div class="action-buttons">
+                        <button id="download-backup" class="btn-secondary">
+                            <i data-lucide="download"></i>
+                            Descargar Backup JSON
+                        </button>
+                        <button id="validate-json" class="btn-secondary">
+                            <i data-lucide="check-circle"></i>
+                            Validar Estructura JSON
+                        </button>
+                        <button id="refresh-data" class="btn-primary">
+                            <i data-lucide="refresh-cw"></i>
+                            Recargar Datos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Image Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Imagen</h3>
+                <button class="modal-close" data-close="edit-modal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="edit-form" class="modal-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="edit-title">Título*</label>
+                        <input type="text" id="edit-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category">Categoría*</label>
+                        <select id="edit-category" required>
+                            <option value="evento">Evento</option>
+                            <option value="keynotes">Keynotes</option>
+                            <option value="ponentes">Ponentes</option>
+                            <option value="testimonios">Testimonios</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="edit-alt">Texto alternativo*</label>
+                        <input type="text" id="edit-alt" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="edit-description">Descripción</label>
+                        <textarea id="edit-description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-close="edit-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
