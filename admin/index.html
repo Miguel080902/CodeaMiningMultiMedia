@@ -299,6 +299,10 @@
                             <i data-lucide="refresh-cw"></i>
                             Recargar Datos
                         </button>
+                        <button id="sync-repository" class="btn-secondary">
+                            <i data-lucide="database"></i>
+                            Sincronizar con Repositorio
+                        </button>
                     </div>
                 </div>
 
@@ -626,6 +630,73 @@ function testOptimizationSettings() {
         `Dimensiones máx: ${imageOptimizer.getSettings().maxWidth}x${imageOptimizer.getSettings().maxHeight}px`
     );
 }
+</script>
+
+<style>
+/* Estados de carga de imágenes en el admin */
+.gallery-item-image {
+    position: relative;
+}
+
+.gallery-item-image img {
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item-image.image-loading::after {
+    content: "Cargando...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.8);
+    color: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.gallery-item-image.image-error::after {
+    content: "Error al cargar";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.gallery-item-image.image-error img {
+    opacity: 0.3;
+}
+
+.gallery-item-image.image-loaded img {
+    opacity: 1;
+}
+
+/* Mejorar apariencia de imágenes optimizadas */
+.optimization-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 4px 6px;
+    border-radius: 12px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.optimization-badge i {
+    width: 12px;
+    height: 12px;
+}
+</style>
 </script>
 <script>
 // Inicializar funcionalidad de optimización masiva

@@ -386,7 +386,9 @@ class GalleryManager {
             return `
                 <div class="gallery-item" data-id="${image.id}">
                     <div class="gallery-item-image">
-                        <img src="${this.getImageUrl(image.src)}" alt="${image.alt}" loading="lazy">
+                        <img src="${this.getImageUrl(image.src, true)}" alt="${image.alt}" loading="lazy" 
+                             onerror="gallery.handleImageError(this, '${image.src}')"
+                             onload="gallery.handleImageLoad(this)">
                         <div class="gallery-item-category">${this.getCategoryName(image.category)}</div>
                         ${optimizationBadge}
                         <div class="gallery-item-actions">
@@ -415,10 +417,42 @@ class GalleryManager {
         lucide.createIcons();
     }
 
-    // Obtener URL completa de imagen
-    getImageUrl(src) {
+    // Obtener URL completa de imagen con cache-busting
+    getImageUrl(src, addCacheBuster = false) {
         if (!this.galleryData) return '';
-        return `${this.galleryData.baseUrl}/${src}`;
+        let url = `${this.galleryData.baseUrl}/${src}`;
+        
+        // Agregar cache-buster si se solicita (útil después de optimizaciones)
+        if (addCacheBuster) {
+            url += `?t=${Date.now()}`;
+        }
+        
+        return url;
+    }
+
+    // Generar URLs de fallback para imágenes optimizadas
+    getImageUrlWithFallbacks(src) {
+        const urls = [];
+        const basePath = src.substring(0, src.lastIndexOf('.'));
+        const baseUrl = this.galleryData?.baseUrl || '';
+        
+        // Primero intentar la URL exacta del JSON
+        urls.push(`${baseUrl}/${src}?t=${Date.now()}`);
+        
+        // Luego intentar versión WebP (común después de optimización)
+        if (!src.endsWith('.webp')) {
+            urls.push(`${baseUrl}/${basePath}.webp?t=${Date.now()}`);
+        }
+        
+        // Finalmente intentar extensiones originales
+        const originalExtensions = ['.jpg', '.jpeg', '.png'];
+        for (const ext of originalExtensions) {
+            if (!src.endsWith(ext)) {
+                urls.push(`${baseUrl}/${basePath}${ext}?t=${Date.now()}`);
+            }
+        }
+        
+        return urls;
     }
 
     // Obtener nombre de categoría
@@ -503,6 +537,108 @@ class GalleryManager {
         link.click();
         
         notifications.show('success', 'Backup creado', 'El archivo de respaldo se ha descargado correctamente.');
+    }
+
+    // Sincronizar gallery.json con archivos reales en el repositorio
+    async syncWithRepository() {
+        if (!this.galleryData) {
+            notifications.show('error', 'Error', 'No hay datos de galería cargados.');
+            return;
+        }
+
+        try {
+            notifications.show('info', 'Sincronizando', 'Verificando archivos en el repositorio...');
+            
+            let updatedCount = 0;
+            const imageFolders = ['about', 'backgrounds', 'hero', 'highlights', 'speakers', 'testimonial'];
+            
+            // Para cada imagen en gallery.json, verificar si el archivo existe
+            for (let image of this.galleryData.images) {
+                const [folder, fileName] = image.src.split('/');
+                const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                
+                // Verificar diferentes extensiones en orden de preferencia
+                const extensionsToCheck = ['.webp', '.jpg', '.jpeg', '.png'];
+                let foundFile = null;
+                
+                for (const ext of extensionsToCheck) {
+                    const testFileName = baseName + ext;
+                    const testPath = `images/${folder}/${testFileName}`;
+                    
+                    try {
+                        await githubAPI.getFile(testPath);
+                        foundFile = `${folder}/${testFileName}`;
+                        break;
+                    } catch (error) {
+                        // Archivo no encontrado, continuar con siguiente extensión
+                    }
+                }
+                
+                if (foundFile && foundFile !== image.src) {
+                    console.log(`🔄 Actualizando: ${image.src} → ${foundFile}`);
+                    image.src = foundFile;
+                    
+                    // Marcar como optimizada si es WebP
+                    if (foundFile.endsWith('.webp')) {
+                        image.optimized = true;
+                    }
+                    
+                    updatedCount++;
+                } else if (!foundFile) {
+                    console.warn(`⚠️ Archivo no encontrado: ${image.src}`);
+                }
+            }
+            
+            if (updatedCount > 0) {
+                await this.saveGalleryData(`Sync gallery.json with repository files (${updatedCount} updates)`);
+                this.renderGallery();
+                notifications.show('success', 'Sincronización completada', 
+                    `Se actualizaron ${updatedCount} referencias de archivos.`);
+            } else {
+                notifications.show('info', 'Sincronización completada', 
+                    'Todos los archivos están sincronizados correctamente.');
+            }
+            
+        } catch (error) {
+            console.error('Error sincronizando con repositorio:', error);
+            notifications.show('error', 'Error en sincronización', error.message);
+        }
+    }
+
+    // Manejar errores de carga de imagen
+    handleImageError(imgElement, originalSrc) {
+        console.warn(`Error cargando imagen: ${imgElement.src}`);
+        
+        // Obtener URLs de fallback
+        const fallbackUrls = this.getImageUrlWithFallbacks(originalSrc);
+        const currentUrl = imgElement.src.split('?')[0]; // Remover cache buster para comparar
+        
+        // Encontrar la siguiente URL a probar
+        let nextUrlIndex = -1;
+        for (let i = 0; i < fallbackUrls.length; i++) {
+            const fallbackUrl = fallbackUrls[i].split('?')[0];
+            if (currentUrl.includes(fallbackUrl.split('/').pop())) {
+                nextUrlIndex = i + 1;
+                break;
+            }
+        }
+        
+        // Si hay una URL de fallback disponible, intentarla
+        if (nextUrlIndex >= 0 && nextUrlIndex < fallbackUrls.length) {
+            console.log(`Intentando fallback: ${fallbackUrls[nextUrlIndex]}`);
+            imgElement.src = fallbackUrls[nextUrlIndex];
+        } else {
+            // No hay más fallbacks, mostrar imagen de error
+            imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjMzNDU1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iMC4zNWVtIj5JbWFnZW4gbm8gZW5jb250cmFkYTwvdGV4dD48L3N2Zz4=';
+            imgElement.parentElement.classList.add('image-error');
+            console.error(`No se pudo cargar imagen: ${originalSrc}`);
+        }
+    }
+
+    // Manejar carga exitosa de imagen
+    handleImageLoad(imgElement) {
+        imgElement.parentElement.classList.remove('image-loading', 'image-error');
+        imgElement.parentElement.classList.add('image-loaded');
     }
 
     // Re-optimizar imagen existente

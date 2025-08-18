@@ -518,23 +518,28 @@ class BulkImageOptimizer {
             // Solo actualizar si realmente cambió la extensión
             if (oldFileName === newFileName) return;
             
-            // Cargar datos actuales de la galería
-            if (!gallery.galleryData) {
-                await gallery.loadGalleryData();
-            }
+            // Recargar datos más recientes de la galería
+            await gallery.loadGalleryData();
             
             // Buscar y actualizar imágenes que coincidan
             let updated = false;
             const oldPath = `${folder}/${oldFileName}`;
             const newPath = `${folder}/${newFileName}`;
             
+            console.log(`🔍 Buscando ${oldPath} para actualizar a ${newPath}`);
+            
             for (let image of gallery.galleryData.images) {
                 if (image.src === oldPath) {
+                    console.log(`✅ Encontrada imagen: ${image.title} (ID: ${image.id})`);
                     image.src = newPath;
                     // Agregar metadatos de optimización
                     image.optimized = true;
-                    image.compressionRatio = this.results
-                        .find(r => r.name === oldFileName)?.compressionRatio || 'N/A';
+                    const result = this.results.find(r => r.name === oldFileName);
+                    if (result) {
+                        image.compressionRatio = result.compressionRatio;
+                        image.originalSize = result.originalSize;
+                        image.optimizedSize = result.optimizedSize;
+                    }
                     updated = true;
                 }
             }
@@ -543,6 +548,13 @@ class BulkImageOptimizer {
             if (updated) {
                 await gallery.saveGalleryData(`Update image paths after optimization: ${newFileName}`);
                 console.log(`✅ Actualizado gallery.json: ${oldPath} → ${newPath}`);
+                
+                // Recargar la galería para mostrar cambios inmediatamente
+                setTimeout(() => {
+                    gallery.renderGallery();
+                }, 1000);
+            } else {
+                console.warn(`⚠️ No se encontró ${oldPath} en gallery.json`);
             }
             
         } catch (error) {

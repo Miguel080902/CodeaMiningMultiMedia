@@ -469,6 +469,28 @@ class AdminApp {
                 notifications.show('error', 'Error recargando', error.message);
             }
         });
+
+        // Sincronizar con repositorio
+        document.getElementById('sync-repository').addEventListener('click', async () => {
+            const confirmed = confirm(
+                '🔄 SINCRONIZAR CON REPOSITORIO\n\n' +
+                'Esta función verificará qué archivos existen realmente en el repositorio ' +
+                'y actualizará las referencias en gallery.json para que coincidan.\n\n' +
+                '✅ Útil después de optimizaciones masivas\n' +
+                '✅ Corrige extensiones de archivos WebP\n' +
+                '✅ Detecta archivos faltantes\n\n' +
+                '¿Continuar con la sincronización?'
+            );
+            
+            if (!confirmed) return;
+            
+            try {
+                await gallery.syncWithRepository();
+            } catch (error) {
+                console.error('Error sincronizando:', error);
+                notifications.show('error', 'Error en sincronización', error.message);
+            }
+        });
     }
 }
 
