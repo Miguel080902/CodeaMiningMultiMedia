@@ -35,36 +35,12 @@
       "description": "Un espacio diseñado para el intercambio de conocimientos y networking."
     },
     {
-      "id": "5",
-      "src": "contact/conference-audience.png",
-      "alt": "Audiencia de la conferencia",
-      "category": "evento",
-      "title": "Audiencia Atenta",
-      "description": "Participantes siguiendo atentamente las presentaciones técnicas."
-    },
-    {
       "id": "7",
       "src": "highlights/panel-discussion.jpg",
       "alt": "Panel de discusión",
       "category": "evento",
       "title": "Panel de Discusión",
       "description": "Mesa redonda con expertos discutiendo el futuro de la minería."
-    },
-    {
-      "id": "12",
-      "src": "keynotes/keynote-gabriel.png",
-      "alt": "Keynote Gabriel",
-      "category": "keynotes",
-      "title": "Ing. Gabriel López",
-      "description": "Keynote: \"Blockchain en la Cadena de Suministro Minera\""
-    },
-    {
-      "id": "14",
-      "src": "keynotes/keynote-leonardo.png",
-      "alt": "Keynote Leonardo",
-      "category": "keynotes",
-      "title": "Ing. Leonardo Vargas",
-      "description": "Keynote: \"IoT y Sensores Inteligentes en Minería\""
     },
     {
       "id": "16",
