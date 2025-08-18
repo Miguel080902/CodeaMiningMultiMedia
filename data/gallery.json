@@ -91,14 +91,6 @@
       "description": "Keynote: \"Inteligencia Artificial aplicada a la Geología\""
     },
     {
-      "id": "12",
-      "src": "keynotes/keynote-gabriel.png",
-      "alt": "Keynote Gabriel",
-      "category": "keynotes",
-      "title": "Ing. Gabriel López",
-      "description": "Keynote: \"Blockchain en la Cadena de Suministro Minera\""
-    },
-    {
       "id": "13",
       "src": "keynotes/keynote-kevin.png",
       "alt": "Keynote Kevin",
