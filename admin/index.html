@@ -303,6 +303,10 @@
                             <i data-lucide="database"></i>
                             Sincronizar con Repositorio
                         </button>
+                        <button id="fix-optimization-data" class="btn-secondary" onclick="fixOptimizationData()">
+                            <i data-lucide="wrench"></i>
+                            Completar Datos de Optimización
+                        </button>
                     </div>
                 </div>
 
@@ -988,9 +992,15 @@ async function implementBackupSync() {
                 console.log(`🔄 Actualizando: ${image.src} → ${foundFile}`);
                 image.src = foundFile;
                 
-                // Marcar como optimizada si es WebP
+                // Marcar como optimizada si es WebP y agregar datos estimados
                 if (foundFile.endsWith('.webp')) {
                     image.optimized = true;
+                    
+                    // Si no tiene datos de compresión, agregar valores estimados
+                    if (!image.compressionRatio) {
+                        image.compressionRatio = '70.0'; // Estimación típica para WebP
+                        image.estimatedOptimization = true; // Marcar como estimado
+                    }
                 }
                 
                 updatedCount++;
@@ -1018,6 +1028,75 @@ async function implementBackupSync() {
     } catch (error) {
         console.error('Error en sincronización de respaldo:', error);
         notifications.show('error', 'Error en sincronización', error.message);
+    }
+}
+
+// Función para completar datos de optimización faltantes
+async function fixOptimizationData() {
+    const confirmed = confirm(
+        '🔧 COMPLETAR DATOS DE OPTIMIZACIÓN\n\n' +
+        'Esta función agregará datos estimados de optimización a imágenes ' +
+        'que están marcadas como optimizadas pero no tienen porcentaje de compresión.\n\n' +
+        '✅ Agregará porcentajes estimados (~70% para WebP)\n' +
+        '✅ Mejorará la visualización en el admin panel\n' +
+        '✅ No afectará las imágenes reales\n\n' +
+        '¿Continuar?'
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        if (!gallery || !gallery.galleryData) {
+            notifications.show('error', 'Error', 'Primero carga los datos de la galería');
+            return;
+        }
+        
+        notifications.show('info', 'Completando datos', 'Agregando datos de optimización faltantes...');
+        
+        let updatedCount = 0;
+        
+        for (let image of gallery.galleryData.images) {
+            // Si está marcada como optimizada pero no tiene compressionRatio
+            if (image.optimized && !image.compressionRatio) {
+                // Agregar datos estimados basados en el tipo de archivo
+                if (image.src.endsWith('.webp')) {
+                    image.compressionRatio = '70.0';
+                    image.estimatedOptimization = true;
+                    updatedCount++;
+                    console.log(`✅ Agregados datos estimados para: ${image.title}`);
+                } else if (image.src.endsWith('.jpg') || image.src.endsWith('.jpeg')) {
+                    image.compressionRatio = '60.0';
+                    image.estimatedOptimization = true;
+                    updatedCount++;
+                    console.log(`✅ Agregados datos estimados para: ${image.title}`);
+                } else if (image.src.endsWith('.png')) {
+                    image.compressionRatio = '50.0';
+                    image.estimatedOptimization = true;
+                    updatedCount++;
+                    console.log(`✅ Agregados datos estimados para: ${image.title}`);
+                }
+            }
+        }
+        
+        if (updatedCount > 0) {
+            // Guardar cambios
+            const jsonContent = JSON.stringify(gallery.galleryData, null, 2);
+            await githubAPI.updateFile('data/gallery.json', jsonContent, `Add estimated optimization data (${updatedCount} updates)`);
+            
+            // Recargar y renderizar
+            await gallery.loadGalleryData();
+            gallery.renderGallery();
+            
+            notifications.show('success', 'Datos completados', 
+                `Se agregaron datos estimados a ${updatedCount} imágenes.`);
+        } else {
+            notifications.show('info', 'Sin cambios necesarios', 
+                'Todas las imágenes optimizadas ya tienen datos completos.');
+        }
+        
+    } catch (error) {
+        console.error('Error completando datos de optimización:', error);
+        notifications.show('error', 'Error', error.message);
     }
 }
 </script>

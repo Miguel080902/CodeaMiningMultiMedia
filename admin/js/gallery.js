@@ -379,7 +379,7 @@ class GalleryManager {
 
         galleryGrid.innerHTML = this.filteredImages.map(image => {
             const optimizationBadge = image.optimized ? 
-                `<div class="optimization-badge" title="Imagen optimizada - ${image.compressionRatio}% de reducción">
+                `<div class="optimization-badge" title="Imagen optimizada${image.compressionRatio ? ` - ${image.compressionRatio}% de reducción` : ' - WebP'}">
                     <i data-lucide="zap"></i>
                 </div>` : '';
 
@@ -405,7 +405,12 @@ class GalleryManager {
                         <p class="gallery-item-description">${image.description || 'Sin descripción'}</p>
                         ${image.optimized ? `
                             <div class="optimization-info">
-                                <small>Optimizada: ${image.compressionRatio}% reducción</small>
+                                <small>
+                                    Optimizada: ${image.compressionRatio ? 
+                                        `${image.compressionRatio}% reducción${image.estimatedOptimization ? ' (est.)' : ''}` : 
+                                        'WebP optimizado'
+                                    }
+                                </small>
                             </div>
                         ` : ''}
                     </div>
