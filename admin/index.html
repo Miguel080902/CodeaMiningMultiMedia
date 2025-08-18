@@ -874,9 +874,30 @@ async function testSyncFunction() {
     }
 }
 
+// Función de debugging para ver qué está disponible
+function debugGalleryObject() {
+    console.log('🔍 DEBUGGING GALLERY OBJECT:');
+    console.log('typeof gallery:', typeof gallery);
+    
+    if (typeof gallery !== 'undefined') {
+        console.log('gallery object:', gallery);
+        console.log('gallery methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(gallery)));
+        console.log('gallery.syncWithRepository exists:', typeof gallery.syncWithRepository === 'function');
+        console.log('gallery.galleryData:', gallery.galleryData ? 'exists' : 'null/undefined');
+    }
+    
+    if (typeof GalleryManager !== 'undefined') {
+        console.log('GalleryManager class available');
+        console.log('GalleryManager prototype methods:', Object.getOwnPropertyNames(GalleryManager.prototype));
+    }
+}
+
 // Función alternativa para el botón (para casos de emergencia)
 function manualSync() {
     console.log('🔧 Sincronización manual iniciada');
+    
+    // Debug first
+    debugGalleryObject();
     
     const confirmed = confirm(
         '🔄 SINCRONIZACIÓN MANUAL\n\n' +
@@ -896,9 +917,107 @@ function manualSync() {
         });
     } else {
         console.error('La función de sincronización no está disponible');
-        if (typeof notifications !== 'undefined') {
-            notifications.show('error', 'Error', 'Función no disponible');
+        
+        // Try to fix it by reloading the method
+        if (typeof gallery !== 'undefined' && typeof GalleryManager !== 'undefined') {
+            console.log('🔧 Intentando reparar función syncWithRepository...');
+            gallery.syncWithRepository = GalleryManager.prototype.syncWithRepository;
+            
+            if (gallery.syncWithRepository) {
+                console.log('✅ Función reparada, intentando de nuevo...');
+                gallery.syncWithRepository().catch(error => {
+                    console.error('Error después de reparar:', error);
+                    if (typeof notifications !== 'undefined') {
+                        notifications.show('error', 'Error', error.message);
+                    }
+                });
+                return;
+            }
         }
+        
+        // Última opción: implementar sincronización inline
+        console.log('🆘 Implementando sincronización de respaldo...');
+        implementBackupSync();
+    }
+}
+
+// Implementación de respaldo de la sincronización
+async function implementBackupSync() {
+    try {
+        if (!gallery || !gallery.galleryData) {
+            console.error('No hay datos de galería cargados');
+            notifications.show('error', 'Error', 'Primero carga los datos de la galería');
+            return;
+        }
+        
+        notifications.show('info', 'Sincronizando', 'Verificando archivos en el repositorio...');
+        
+        let updatedCount = 0;
+        
+        // Para cada imagen en gallery.json, verificar si el archivo existe
+        for (let image of gallery.galleryData.images) {
+            if (!image.src) continue;
+            
+            const parts = image.src.split('/');
+            if (parts.length < 2) continue;
+            
+            const folder = parts[0];
+            const fileName = parts[1];
+            const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+            
+            // Verificar diferentes extensiones en orden de preferencia
+            const extensionsToCheck = ['.webp', '.jpg', '.jpeg', '.png'];
+            let foundFile = null;
+            
+            for (const ext of extensionsToCheck) {
+                const testFileName = baseName + ext;
+                const testPath = `images/${folder}/${testFileName}`;
+                
+                try {
+                    await githubAPI.getFile(testPath);
+                    foundFile = `${folder}/${testFileName}`;
+                    console.log(`✅ Encontrado: ${testPath}`);
+                    break;
+                } catch (error) {
+                    // Archivo no encontrado, continuar con siguiente extensión
+                    console.log(`❌ No encontrado: ${testPath}`);
+                }
+            }
+            
+            if (foundFile && foundFile !== image.src) {
+                console.log(`🔄 Actualizando: ${image.src} → ${foundFile}`);
+                image.src = foundFile;
+                
+                // Marcar como optimizada si es WebP
+                if (foundFile.endsWith('.webp')) {
+                    image.optimized = true;
+                }
+                
+                updatedCount++;
+            } else if (!foundFile) {
+                console.warn(`⚠️ Archivo no encontrado para: ${image.src}`);
+            }
+        }
+        
+        if (updatedCount > 0) {
+            // Guardar cambios
+            const jsonContent = JSON.stringify(gallery.galleryData, null, 2);
+            await githubAPI.updateFile('data/gallery.json', jsonContent, `Sync gallery.json with repository files (${updatedCount} updates)`);
+            
+            // Recargar y renderizar
+            await gallery.loadGalleryData();
+            gallery.renderGallery();
+            
+            notifications.show('success', 'Sincronización completada', 
+                `Se actualizaron ${updatedCount} referencias de archivos.`);
+        } else {
+            notifications.show('info', 'Sincronización completada', 
+                'Todos los archivos están sincronizados correctamente.');
+        }
+        
+    } catch (error) {
+        console.error('Error en sincronización de respaldo:', error);
+        notifications.show('error', 'Error en sincronización', error.message);
     }
 }
 </script>
