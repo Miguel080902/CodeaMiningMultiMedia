@@ -299,7 +299,7 @@
                             <i data-lucide="refresh-cw"></i>
                             Recargar Datos
                         </button>
-                        <button id="sync-repository" class="btn-secondary">
+                        <button id="sync-repository" class="btn-secondary" onclick="manualSync()">
                             <i data-lucide="database"></i>
                             Sincronizar con Repositorio
                         </button>
@@ -850,6 +850,56 @@ async function startBulkOptimization() {
 // Exportar reporte de análisis
 function exportAnalysisReport() {
     bulkOptimizer.exportDetailedReport();
+}
+
+// Función de prueba para sincronización (para debugging)
+async function testSyncFunction() {
+    console.log('🧪 Probando función de sincronización...');
+    
+    if (typeof gallery === 'undefined') {
+        console.error('❌ gallery no está definido');
+        return;
+    }
+    
+    if (!gallery.syncWithRepository) {
+        console.error('❌ syncWithRepository no existe en gallery');
+        return;
+    }
+    
+    try {
+        console.log('✅ Todo listo, ejecutando sincronización...');
+        await gallery.syncWithRepository();
+    } catch (error) {
+        console.error('❌ Error en sincronización:', error);
+    }
+}
+
+// Función alternativa para el botón (para casos de emergencia)
+function manualSync() {
+    console.log('🔧 Sincronización manual iniciada');
+    
+    const confirmed = confirm(
+        '🔄 SINCRONIZACIÓN MANUAL\n\n' +
+        'Esta función verificará qué archivos existen realmente en el repositorio ' +
+        'y actualizará las referencias en gallery.json para que coincidan.\n\n' +
+        '¿Continuar?'
+    );
+    
+    if (!confirmed) return;
+    
+    if (typeof gallery !== 'undefined' && gallery.syncWithRepository) {
+        gallery.syncWithRepository().catch(error => {
+            console.error('Error en sincronización manual:', error);
+            if (typeof notifications !== 'undefined') {
+                notifications.show('error', 'Error', error.message);
+            }
+        });
+    } else {
+        console.error('La función de sincronización no está disponible');
+        if (typeof notifications !== 'undefined') {
+            notifications.show('error', 'Error', 'Función no disponible');
+        }
+    }
 }
 </script>
 </body>

@@ -471,26 +471,44 @@ class AdminApp {
         });
 
         // Sincronizar con repositorio
-        document.getElementById('sync-repository').addEventListener('click', async () => {
-            const confirmed = confirm(
-                '🔄 SINCRONIZAR CON REPOSITORIO\n\n' +
-                'Esta función verificará qué archivos existen realmente en el repositorio ' +
-                'y actualizará las referencias en gallery.json para que coincidan.\n\n' +
-                '✅ Útil después de optimizaciones masivas\n' +
-                '✅ Corrige extensiones de archivos WebP\n' +
-                '✅ Detecta archivos faltantes\n\n' +
-                '¿Continuar con la sincronización?'
-            );
-            
-            if (!confirmed) return;
-            
-            try {
-                await gallery.syncWithRepository();
-            } catch (error) {
-                console.error('Error sincronizando:', error);
-                notifications.show('error', 'Error en sincronización', error.message);
-            }
-        });
+        const syncButton = document.getElementById('sync-repository');
+        if (syncButton) {
+            console.log('✅ Botón de sincronización encontrado, agregando event listener');
+            syncButton.addEventListener('click', async (e) => {
+                console.log('🔄 Botón de sincronización clickeado');
+                e.preventDefault();
+                
+                const confirmed = confirm(
+                    '🔄 SINCRONIZAR CON REPOSITORIO\n\n' +
+                    'Esta función verificará qué archivos existen realmente en el repositorio ' +
+                    'y actualizará las referencias en gallery.json para que coincidan.\n\n' +
+                    '✅ Útil después de optimizaciones masivas\n' +
+                    '✅ Corrige extensiones de archivos WebP\n' +
+                    '✅ Detecta archivos faltantes\n\n' +
+                    '¿Continuar con la sincronización?'
+                );
+                
+                if (!confirmed) {
+                    console.log('❌ Sincronización cancelada por el usuario');
+                    return;
+                }
+                
+                console.log('🚀 Iniciando sincronización...');
+                
+                try {
+                    if (typeof gallery !== 'undefined' && gallery.syncWithRepository) {
+                        await gallery.syncWithRepository();
+                    } else {
+                        throw new Error('La función syncWithRepository no está disponible');
+                    }
+                } catch (error) {
+                    console.error('❌ Error sincronizando:', error);
+                    notifications.show('error', 'Error en sincronización', error.message);
+                }
+            });
+        } else {
+            console.warn('⚠️ Botón de sincronización no encontrado');
+        }
     }
 }
 
