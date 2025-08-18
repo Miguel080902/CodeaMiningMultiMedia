@@ -177,6 +177,17 @@
       "category": "evento",
       "title": "Prueba de optimizacion",
       "description": "prueba"
+    },
+    {
+      "id": "25",
+      "src": "about/evento-whatsapp-image-2025-08-14-at-4-1755531173295.webp",
+      "alt": "prueba",
+      "category": "evento",
+      "title": "Prueba de optimizacion",
+      "description": "sfas",
+      "optimized": true,
+      "originalSize": 57942,
+      "compressionRatio": "51.5"
     }
   ]
 }
