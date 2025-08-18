@@ -27,10 +27,14 @@ class GalleryManager {
         try {
             const jsonContent = JSON.stringify(this.galleryData, null, 2);
             await githubAPI.updateFile('data/gallery.json', jsonContent, message);
-            notifications.show('success', 'Guardado exitoso', 'Los datos de la galería se han actualizado correctamente.');
         } catch (error) {
             console.error('Error guardando datos de galería:', error);
-            notifications.show('error', 'Error al guardar', error.message);
+            
+            // Si es un error 409 (conflicto), proporcionar más información
+            if (error.message.includes('409') || error.message.includes('does not match')) {
+                throw new Error('Conflicto: El archivo ha sido modificado por otro usuario. Se requiere recargar los datos.');
+            }
+            
             throw error;
         }
     }
@@ -107,7 +111,8 @@ class GalleryManager {
             const imageIndex = this.galleryData.images.findIndex(img => img.id === id);
             
             if (imageIndex === -1) {
-                throw new Error('Imagen no encontrada');
+                notifications.show('error', 'Error', 'Imagen no encontrada');
+                return;
             }
 
             const image = this.galleryData.images[imageIndex];
@@ -117,28 +122,59 @@ class GalleryManager {
                 return;
             }
 
-            // Eliminar imagen del array
-            this.galleryData.images.splice(imageIndex, 1);
-
-            // Intentar eliminar archivo físico (opcional, puede fallar si no existe)
+            // Intentar eliminar archivo físico primero (si existe)
+            let physicalFileDeleted = false;
             try {
                 const imagePath = `images/${image.src}`;
                 await githubAPI.deleteFile(imagePath, `Delete image: ${image.title}`);
+                physicalFileDeleted = true;
             } catch (deleteError) {
-                console.warn('No se pudo eliminar el archivo físico:', deleteError);
+                console.warn('Archivo físico no encontrado o no se pudo eliminar:', deleteError);
+                // Continuar con la eliminación del registro en gallery.json
             }
 
-            await this.saveGalleryData(`Remove image: ${image.title}`);
+            // Eliminar imagen del array
+            this.galleryData.images.splice(imageIndex, 1);
+
+            // Intentar guardar cambios con reintentos en caso de conflicto
+            let saveAttempts = 3;
+            while (saveAttempts > 0) {
+                try {
+                    await this.saveGalleryData(`Remove image: ${image.title}`);
+                    break;
+                } catch (saveError) {
+                    saveAttempts--;
+                    if (saveError.message.includes('409') || saveError.message.includes('does not match')) {
+                        if (saveAttempts > 0) {
+                            // Recargar datos antes de reintentar
+                            await this.loadGalleryData();
+                            // Volver a eliminar la imagen del array actualizado
+                            const newImageIndex = this.galleryData.images.findIndex(img => img.id === id);
+                            if (newImageIndex !== -1) {
+                                this.galleryData.images.splice(newImageIndex, 1);
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1 segundo
+                        } else {
+                            throw new Error('No se pudo actualizar el archivo después de varios intentos. La imagen puede haber sido eliminada por otro usuario.');
+                        }
+                    } else {
+                        throw saveError;
+                    }
+                }
+            }
             
             this.applyFilters();
             this.updateStats();
             this.renderGallery();
 
-            notifications.show('success', 'Imagen eliminada', `La imagen "${image.title}" se ha eliminado correctamente.`);
+            const message = physicalFileDeleted ? 
+                `La imagen "${image.title}" se ha eliminado completamente.` :
+                `La imagen "${image.title}" se ha eliminado del listado (el archivo físico no se encontró).`;
+            
+            notifications.show('success', 'Imagen eliminada', message);
         } catch (error) {
             console.error('Error eliminando imagen:', error);
             notifications.show('error', 'Error al eliminar imagen', error.message);
-            throw error;
         }
     }
 
