@@ -75,12 +75,21 @@ class BulkImageOptimizer {
     // Descubrir todas las imágenes en el repositorio
     async discoverAllImages() {
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-        const imageFolders = ['about', 'backgrounds', 'contact', 'hero', 'highlights', 'speakers', 'keynotes', 'testimonial'];
+        // Usar las carpetas que realmente existen basadas en el gallery.json
+        const imageFolders = ['about', 'backgrounds', 'hero', 'highlights', 'speakers', 'testimonial'];
         const allImages = [];
 
         try {
-            // Buscar en la carpeta images y subcarpetas
-            for (const folder of imageFolders) {
+            // Primero verificar qué carpetas existen realmente
+            const existingFolders = await this.validateFolders(imageFolders);
+            console.log(`📁 Carpetas encontradas: ${existingFolders.join(', ')}`);
+            
+            if (existingFolders.length === 0) {
+                notifications.show('warning', 'Sin carpetas', 'No se encontraron carpetas de imágenes en el repositorio.');
+                return [];
+            }
+            // Buscar en las carpetas existentes
+            for (const folder of existingFolders) {
                 try {
                     const files = await githubAPI.listFiles(`images/${folder}`);
                     
@@ -100,7 +109,10 @@ class BulkImageOptimizer {
                         }
                     }
                 } catch (error) {
-                    console.warn(`Error listando carpeta ${folder}:`, error);
+                    // Solo advertir si no es un error 404 (carpeta no existe)
+                    if (!error.message.includes('404')) {
+                        console.warn(`Error listando carpeta ${folder}:`, error);
+                    }
                 }
             }
 
@@ -205,12 +217,19 @@ class BulkImageOptimizer {
                 `image/${optimizationResult.format}`
             );
 
-            // Subir imagen optimizada
-            await githubAPI.uploadImage(optimizedFile, imageInfo.folder, newName);
-
-            // Si el nombre cambió, eliminar archivo original
-            if (newName !== imageInfo.name) {
+            // Subir imagen optimizada (reemplazando o creando nueva)
+            const newPath = `images/${imageInfo.folder}/${newName}`;
+            
+            if (newName === imageInfo.name) {
+                // Reemplazar archivo existente (mismo nombre, pero optimizado)
+                await githubAPI.replaceImage(optimizedFile, imageInfo.path, imageInfo.sha, `Optimize image: ${newName}`);
+            } else {
+                // Crear nuevo archivo optimizado y eliminar original
+                await githubAPI.uploadImage(optimizedFile, imageInfo.folder, newName);
                 await githubAPI.deleteFile(imageInfo.path, `Replace with optimized version: ${newName}`);
+                
+                // Actualizar gallery.json con la nueva extensión
+                await this.updateGalleryJsonPaths(imageInfo.name, newName, imageInfo.folder);
             }
 
             this.progress.optimized++;
@@ -227,10 +246,34 @@ class BulkImageOptimizer {
         } catch (error) {
             console.error(`Error procesando ${imageInfo.name}:`, error);
             this.progress.errors++;
+            
+            // Clasificar diferentes tipos de errores para mejor diagnóstico
+            let errorType = 'unknown';
+            let errorMessage = error.message;
+            
+            if (error.message.includes('404')) {
+                errorType = 'file_not_found';
+                errorMessage = 'Archivo no encontrado en el repositorio';
+            } else if (error.message.includes('409') || error.message.includes('does not match')) {
+                errorType = 'conflict';
+                errorMessage = 'Conflicto: archivo modificado por otro usuario';
+            } else if (error.message.includes('422')) {
+                errorType = 'invalid_request';
+                errorMessage = 'Error de validación en GitHub API';
+            } else if (error.message.includes('403')) {
+                errorType = 'permission_denied';
+                errorMessage = 'Sin permisos para modificar el archivo';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorType = 'network_error';
+                errorMessage = 'Error de conexión de red';
+            }
+            
             this.results.push({
                 ...imageInfo,
                 status: 'error',
-                error: error.message
+                errorType: errorType,
+                error: errorMessage,
+                originalError: error.message
             });
         }
     }
@@ -437,6 +480,25 @@ class BulkImageOptimizer {
         this.results = [];
     }
 
+    // Validar qué carpetas existen en el repositorio
+    async validateFolders(folderList) {
+        const existingFolders = [];
+        
+        for (const folder of folderList) {
+            try {
+                await githubAPI.listFiles(`images/${folder}`);
+                existingFolders.push(folder);
+            } catch (error) {
+                // Carpeta no existe, continuar con la siguiente
+                if (!error.message.includes('404')) {
+                    console.warn(`Error verificando carpeta ${folder}:`, error);
+                }
+            }
+        }
+        
+        return existingFolders;
+    }
+
     // Delay helper
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -448,6 +510,45 @@ class BulkImageOptimizer {
             ...this.progress,
             results: this.results
         };
+    }
+
+    // Actualizar rutas en gallery.json cuando cambia la extensión
+    async updateGalleryJsonPaths(oldFileName, newFileName, folder) {
+        try {
+            // Solo actualizar si realmente cambió la extensión
+            if (oldFileName === newFileName) return;
+            
+            // Cargar datos actuales de la galería
+            if (!gallery.galleryData) {
+                await gallery.loadGalleryData();
+            }
+            
+            // Buscar y actualizar imágenes que coincidan
+            let updated = false;
+            const oldPath = `${folder}/${oldFileName}`;
+            const newPath = `${folder}/${newFileName}`;
+            
+            for (let image of gallery.galleryData.images) {
+                if (image.src === oldPath) {
+                    image.src = newPath;
+                    // Agregar metadatos de optimización
+                    image.optimized = true;
+                    image.compressionRatio = this.results
+                        .find(r => r.name === oldFileName)?.compressionRatio || 'N/A';
+                    updated = true;
+                }
+            }
+            
+            // Guardar cambios si hubo actualizaciones
+            if (updated) {
+                await gallery.saveGalleryData(`Update image paths after optimization: ${newFileName}`);
+                console.log(`✅ Actualizado gallery.json: ${oldPath} → ${newPath}`);
+            }
+            
+        } catch (error) {
+            console.error('Error actualizando gallery.json:', error);
+            // No fallar la optimización por esto, solo advertir
+        }
     }
 
     // Exportar reporte detallado

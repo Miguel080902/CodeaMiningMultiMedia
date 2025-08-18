@@ -251,6 +251,53 @@ class GitHubAPI {
         const maxSizeBytes = maxSizeMB * 1024 * 1024;
         return file.size <= maxSizeBytes;
     }
+
+    // Reemplazar archivo existente con nueva versión optimizada
+    async replaceImage(file, path, originalSha, commitMessage) {
+        try {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = async () => {
+                    try {
+                        // Convertir a base64
+                        const base64Content = reader.result.split(',')[1];
+                        
+                        const response = await fetch(`${this.baseUrl}/repos/${this.repo}/contents/${path}`, {
+                            method: 'PUT',
+                            headers: auth.getHeaders(),
+                            body: JSON.stringify({
+                                message: commitMessage,
+                                content: base64Content,
+                                branch: this.branch,
+                                sha: originalSha
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Error ${response.status}: ${errorData.message || response.statusText}`);
+                        }
+
+                        const result = await response.json();
+                        resolve({
+                            path: path,
+                            url: `https://raw.githubusercontent.com/${this.repo}/${this.branch}/${path}`,
+                            sha: result.content.sha
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                reader.onerror = () => reject(new Error('Error leyendo el archivo'));
+                reader.readAsDataURL(file);
+            });
+        } catch (error) {
+            console.error('Error reemplazando imagen:', error);
+            throw error;
+        }
+    }
 }
 
 // Instancia global de la API
