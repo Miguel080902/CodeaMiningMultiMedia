@@ -35,14 +35,6 @@
       "description": "Un espacio diseñado para el intercambio de conocimientos y networking."
     },
     {
-      "id": "5",
-      "src": "contact/conference-audience.png",
-      "alt": "Audiencia de la conferencia",
-      "category": "evento",
-      "title": "Audiencia Atenta",
-      "description": "Participantes siguiendo atentamente las presentaciones técnicas."
-    },
-    {
       "id": "6",
       "src": "contact/mining-engineer-woman.png",
       "alt": "Ingeniera de minas",
@@ -97,14 +89,6 @@
       "category": "keynotes",
       "title": "Dr. Kevin Johnson",
       "description": "Keynote: \"Machine Learning para Optimización de Procesos\""
-    },
-    {
-      "id": "14",
-      "src": "keynotes/keynote-leonardo.png",
-      "alt": "Keynote Leonardo",
-      "category": "keynotes",
-      "title": "Ing. Leonardo Vargas",
-      "description": "Keynote: \"IoT y Sensores Inteligentes en Minería\""
     },
     {
       "id": "16",
@@ -177,17 +161,6 @@
       "category": "evento",
       "title": "Prueba de optimizacion",
       "description": "prueba"
-    },
-    {
-      "id": "25",
-      "src": "about/evento-whatsapp-image-2025-08-14-at-4-1755531173295.webp",
-      "alt": "prueba",
-      "category": "evento",
-      "title": "Prueba de optimizacion",
-      "description": "sfas",
-      "optimized": true,
-      "originalSize": 57942,
-      "compressionRatio": "51.5"
     }
   ]
 }
