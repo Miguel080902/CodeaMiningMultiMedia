@@ -4,107 +4,120 @@
   "images": [
     {
       "id": "1",
-      "src": "about/about-1.jpg",
+      "src": "about/about-1.webp",
       "alt": "Momento del evento CODEa Mining Fest",
       "category": "evento",
       "title": "Networking",
-      "description": "Profesionales de la industria minera compartiendo experiencias y creando nuevas conexiones."
+      "description": "Profesionales de la industria minera compartiendo experiencias y creando nuevas conexiones.",
+      "optimized": true
     },
     {
       "id": "2",
-      "src": "about/about-2.jpg",
+      "src": "about/about-2.webp",
       "alt": "Asistentes del evento",
       "category": "evento",
       "title": "Audiencia Comprometida",
-      "description": "Más de 500 asistentes participando activamente en las conferencias."
+      "description": "Más de 500 asistentes participando activamente en las conferencias.",
+      "optimized": true
     },
     {
       "id": "3",
-      "src": "about/about-3.jpg",
+      "src": "about/about-3.webp",
       "alt": "Presentación en vivo",
       "category": "evento",
       "title": "Presentaciones Magistrales",
-      "description": "Expertos compartiendo las últimas tendencias en tecnología minera."
+      "description": "Expertos compartiendo las últimas tendencias en tecnología minera.",
+      "optimized": true
     },
     {
       "id": "4",
-      "src": "about/about-4.jpg",
+      "src": "about/about-4.webp",
       "alt": "Ambiente del evento",
       "category": "evento",
       "title": "Ambiente Profesional",
-      "description": "Un espacio diseñado para el intercambio de conocimientos y networking."
+      "description": "Un espacio diseñado para el intercambio de conocimientos y networking.",
+      "optimized": true
     },
     {
       "id": "7",
-      "src": "highlights/panel-discussion.jpg",
+      "src": "highlights/panel-discussion.webp",
       "alt": "Panel de discusión",
       "category": "evento",
       "title": "Panel de Discusión",
-      "description": "Mesa redonda con expertos discutiendo el futuro de la minería."
+      "description": "Mesa redonda con expertos discutiendo el futuro de la minería.",
+      "optimized": true
     },
     {
       "id": "16",
-      "src": "speakers/speaker-christa.png",
+      "src": "speakers/speaker-christa.webp",
       "alt": "Speaker Christa",
       "category": "ponentes",
       "title": "Dra. Christa Anderson",
-      "description": "Especialista en Sostenibilidad Minera"
+      "description": "Especialista en Sostenibilidad Minera",
+      "optimized": true
     },
     {
       "id": "17",
-      "src": "speakers/speaker-christian.png",
+      "src": "speakers/speaker-christian.webp",
       "alt": "Speaker Christian",
       "category": "ponentes",
       "title": "Ing. Christian Müller",
-      "description": "Experto en Tecnologías de Extracción"
+      "description": "Experto en Tecnologías de Extracción",
+      "optimized": true
     },
     {
       "id": "18",
-      "src": "speakers/speaker-hyder.png",
+      "src": "speakers/speaker-hyder.webp",
       "alt": "Speaker Hyder",
       "category": "ponentes",
       "title": "Dr. Hyder Khan",
-      "description": "Investigador en Procesamiento de Minerales"
+      "description": "Investigador en Procesamiento de Minerales",
+      "optimized": true
     },
     {
       "id": "19",
-      "src": "speakers/speaker-leonardo.png",
+      "src": "speakers/speaker-leonardo.webp",
       "alt": "Speaker Leonardo",
       "category": "ponentes",
       "title": "Ing. Leonardo Castro",
-      "description": "Consultor en Optimización de Operaciones"
+      "description": "Consultor en Optimización de Operaciones",
+      "optimized": true
     },
     {
       "id": "20",
-      "src": "testimonial/IMG_3293.jpg",
+      "src": "testimonial/IMG_3293.webp",
       "alt": "Testimonio participante",
       "category": "testimonios",
       "title": "Momento de Networking",
-      "description": "Participantes intercambiando experiencias durante el evento"
+      "description": "Participantes intercambiando experiencias durante el evento",
+      "optimized": true
     },
     {
       "id": "21",
-      "src": "testimonial/testimonial-catherine.jpg",
+      "src": "testimonial/testimonial-catherine.webp",
       "alt": "Testimonio Catherine",
       "category": "testimonios",
       "title": "Catherine Williams",
-      "description": "\"Una experiencia transformadora para mi carrera en minería\""
+      "description": "\"Una experiencia transformadora para mi carrera en minería\"",
+      "optimized": true
     },
     {
       "id": "22",
-      "src": "testimonial/testimonial-luis.png",
+      "src": "testimonial/testimonial-luis.webp",
       "alt": "Testimonio Luis",
       "category": "testimonios",
       "title": "Luis Fernández",
-      "description": "\"Excelente oportunidad para conocer las últimas tendencias\""
+      "description": "\"Excelente oportunidad para conocer las últimas tendencias\"",
+      "optimized": true
     },
     {
       "id": "23",
-      "src": "testimonial/testimonial-yair.png",
+      "src": "testimonial/testimonial-yair.webp",
       "alt": "Testimonio Yair",
       "category": "testimonios",
       "title": "Yair González",
-      "description": "\"Networking invaluable con profesionales de toda Latinoamérica\""
+      "description": "\"Networking invaluable con profesionales de toda Latinoamérica\"",
+      "optimized": true
     }
   ]
 }
