@@ -115,14 +115,6 @@
       "description": "Keynote: \"IoT y Sensores Inteligentes en Minería\""
     },
     {
-      "id": "15",
-      "src": "keynotes/keynote-osvaldo.png",
-      "alt": "Keynote Osvaldo",
-      "category": "keynotes",
-      "title": "Dr. Osvaldo Herrera",
-      "description": "Keynote: \"Minería Espacial: El Futuro de la Extracción\""
-    },
-    {
       "id": "16",
       "src": "speakers/speaker-christa.png",
       "alt": "Speaker Christa",
@@ -185,6 +177,14 @@
       "category": "testimonios",
       "title": "Yair González",
       "description": "\"Networking invaluable con profesionales de toda Latinoamérica\""
+    },
+    {
+      "id": "24",
+      "src": "about/evento-whatsapp-image-2025-08-12-at-1-1755530323286.jpeg",
+      "alt": "prueba",
+      "category": "evento",
+      "title": "Prueba de optimizacion",
+      "description": "prueba"
     }
   ]
 }
