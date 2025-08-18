@@ -35,12 +35,12 @@
       "description": "Un espacio diseñado para el intercambio de conocimientos y networking."
     },
     {
-      "id": "6",
-      "src": "contact/mining-engineer-woman.png",
-      "alt": "Ingeniera de minas",
+      "id": "5",
+      "src": "contact/conference-audience.png",
+      "alt": "Audiencia de la conferencia",
       "category": "evento",
-      "title": "Diversidad en la Minería",
-      "description": "Profesionales de todas las áreas participando en el evento."
+      "title": "Audiencia Atenta",
+      "description": "Participantes siguiendo atentamente las presentaciones técnicas."
     },
     {
       "id": "7",
@@ -51,44 +51,20 @@
       "description": "Mesa redonda con expertos discutiendo el futuro de la minería."
     },
     {
-      "id": "8",
-      "src": "keynotes/keynote-alessandra.png",
-      "alt": "Keynote Alessandra",
+      "id": "12",
+      "src": "keynotes/keynote-gabriel.png",
+      "alt": "Keynote Gabriel",
       "category": "keynotes",
-      "title": "Dra. Alessandra Silva",
-      "description": "Keynote: \"Innovación y Sostenibilidad en la Minería del Futuro\""
+      "title": "Ing. Gabriel López",
+      "description": "Keynote: \"Blockchain en la Cadena de Suministro Minera\""
     },
     {
-      "id": "9",
-      "src": "keynotes/keynote-alexander.png",
-      "alt": "Keynote Alexander",
+      "id": "14",
+      "src": "keynotes/keynote-leonardo.png",
+      "alt": "Keynote Leonardo",
       "category": "keynotes",
-      "title": "Dr. Alexander Torres",
-      "description": "Keynote: \"Transformación Digital en Operaciones Mineras\""
-    },
-    {
-      "id": "10",
-      "src": "keynotes/keynote-cleber.png",
-      "alt": "Keynote Cleber",
-      "category": "keynotes",
-      "title": "Ing. Cleber Rodríguez",
-      "description": "Keynote: \"Automatización y Robótica en la Industria Minera\""
-    },
-    {
-      "id": "11",
-      "src": "keynotes/keynote-felipe.png",
-      "alt": "Keynote Felipe",
-      "category": "keynotes",
-      "title": "Dr. Felipe Martínez",
-      "description": "Keynote: \"Inteligencia Artificial aplicada a la Geología\""
-    },
-    {
-      "id": "13",
-      "src": "keynotes/keynote-kevin.png",
-      "alt": "Keynote Kevin",
-      "category": "keynotes",
-      "title": "Dr. Kevin Johnson",
-      "description": "Keynote: \"Machine Learning para Optimización de Procesos\""
+      "title": "Ing. Leonardo Vargas",
+      "description": "Keynote: \"IoT y Sensores Inteligentes en Minería\""
     },
     {
       "id": "16",
