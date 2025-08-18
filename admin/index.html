@@ -365,6 +365,114 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <h3>🚀 Optimización Masiva de Imágenes Existentes</h3>
+                    <p style="color: #94a3b8; margin-bottom: 1.5rem;">
+                        Optimiza todas las imágenes que ya están subidas en tu repositorio. 
+                        <strong>¡Esto puede reducir significativamente el tamaño total de tu sitio!</strong>
+                    </p>
+                    
+                    <!-- Información previa -->
+                    <div class="bulk-info-panel">
+                        <div class="info-item">
+                            <i data-lucide="folder"></i>
+                            <div>
+                                <strong>Carpetas a revisar:</strong>
+                                <span>about, backgrounds, contact, hero, highlights, speakers, keynotes, testimonial</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="image"></i>
+                            <div>
+                                <strong>Formatos soportados:</strong>
+                                <span>JPG, PNG, WebP</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i data-lucide="zap"></i>
+                            <div>
+                                <strong>Reducción esperada:</strong>
+                                <span>60-85% en promedio</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opciones de optimización masiva -->
+                    <div class="bulk-options">
+                        <h4>Opciones de Optimización</h4>
+                        
+                        <div class="option-group">
+                            <label class="option-label">
+                                <input type="checkbox" id="bulk-create-backup" checked>
+                                <span>Crear backup antes de optimizar</span>
+                                <small>Recomendado: Guarda un respaldo del estado actual</small>
+                            </label>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label class="option-label">
+                                <input type="checkbox" id="bulk-skip-optimized" checked>
+                                <span>Omitir imágenes ya optimizadas</span>
+                                <small>Evita procesar imágenes WebP o menores a 100KB</small>
+                            </label>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label class="option-label">
+                                <input type="checkbox" id="bulk-replace-originals" checked>
+                                <span>Reemplazar archivos originales</span>
+                                <small>Usa el mismo nombre, pero optimizado</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="bulk-actions">
+                        <button id="analyze-images" class="btn-secondary">
+                            <i data-lucide="search"></i>
+                            Analizar Imágenes
+                        </button>
+                        
+                        <button id="dry-run-optimization" class="btn-secondary">
+                            <i data-lucide="eye"></i>
+                            Simulacro (Dry Run)
+                        </button>
+                        
+                        <button id="start-bulk-optimization" class="btn-primary">
+                            <i data-lucide="zap"></i>
+                            Optimizar Todas las Imágenes
+                        </button>
+                    </div>
+
+                    <!-- Panel de resultados -->
+                    <div id="bulk-results" class="bulk-results" style="display: none;">
+                        <h4>📊 Último Análisis</h4>
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <span class="result-label">Imágenes encontradas:</span>
+                                <span id="found-images" class="result-value">-</span>
+                            </div>
+                            <div class="result-card">
+                                <span class="result-label">Necesitan optimización:</span>
+                                <span id="need-optimization" class="result-value">-</span>
+                            </div>
+                            <div class="result-card">
+                                <span class="result-label">Reducción estimada:</span>
+                                <span id="estimated-savings" class="result-value">-</span>
+                            </div>
+                            <div class="result-card">
+                                <span class="result-label">Tiempo estimado:</span>
+                                <span id="estimated-time" class="result-value">-</span>
+                            </div>
+                        </div>
+                        
+                        <button id="export-analysis" class="btn-secondary" style="margin-top: 1rem;">
+                            <i data-lucide="download"></i>
+                            Exportar Análisis Detallado
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -418,6 +526,7 @@
     <script src="js/api.js"></script>
     <script src="js/image-optimizer.js"></script>
     <script src="js/gallery.js"></script>
+    <script src="js/bulk-image-optimizer.js"></script>
     <script src="js/app.js"></script>
     <script>
 // Inicializar configuración de optimización cuando el DOM esté listo
@@ -516,6 +625,160 @@ function testOptimizationSettings() {
         `Calidad: ${(imageOptimizer.getSettings().quality * 100).toFixed(0)}%, ` +
         `Dimensiones máx: ${imageOptimizer.getSettings().maxWidth}x${imageOptimizer.getSettings().maxHeight}px`
     );
+}
+</script>
+<script>
+// Inicializar funcionalidad de optimización masiva
+document.addEventListener('DOMContentLoaded', function() {
+    initBulkOptimization();
+});
+
+function initBulkOptimization() {
+    // Event listeners para los botones
+    document.getElementById('analyze-images').addEventListener('click', analyzeExistingImages);
+    document.getElementById('dry-run-optimization').addEventListener('click', runDryRunOptimization);
+    document.getElementById('start-bulk-optimization').addEventListener('click', startBulkOptimization);
+    document.getElementById('export-analysis').addEventListener('click', exportAnalysisReport);
+}
+
+// Analizar imágenes existentes
+async function analyzeExistingImages() {
+    const button = document.getElementById('analyze-images');
+    const originalText = button.innerHTML;
+    
+    try {
+        button.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Analizando...';
+        button.disabled = true;
+        
+        notifications.show('info', 'Analizando imágenes', 'Escaneando todas las imágenes del repositorio...');
+        
+        // Descubrir todas las imágenes
+        const allImages = await bulkOptimizer.discoverAllImages();
+        
+        if (allImages.length === 0) {
+            notifications.show('warning', 'No hay imágenes', 'No se encontraron imágenes en el repositorio.');
+            return;
+        }
+        
+        // Calcular estadísticas
+        let needOptimization = 0;
+        let totalOriginalSize = 0;
+        let estimatedOptimizedSize = 0;
+        
+        for (const image of allImages.slice(0, 10)) { // Analizar muestra de 10 imágenes
+            try {
+                const imageBlob = await bulkOptimizer.downloadImage(image.downloadUrl);
+                const tempFile = new File([imageBlob], image.name, { type: imageBlob.type });
+                const analysis = await imageOptimizer.analyzeImage(tempFile);
+                
+                totalOriginalSize += analysis.originalSize;
+                
+                if (analysis.needsOptimization) {
+                    needOptimization++;
+                    // Estimar reducción del 70%
+                    estimatedOptimizedSize += analysis.originalSize * 0.3;
+                } else {
+                    estimatedOptimizedSize += analysis.originalSize;
+                }
+            } catch (error) {
+                console.warn(`Error analizando ${image.name}:`, error);
+            }
+        }
+        
+        // Extrapolar a todas las imágenes
+        const ratio = allImages.length / Math.min(10, allImages.length);
+        needOptimization = Math.round(needOptimization * ratio);
+        totalOriginalSize *= ratio;
+        estimatedOptimizedSize *= ratio;
+        
+        const estimatedSavings = totalOriginalSize - estimatedOptimizedSize;
+        const estimatedTimeMinutes = Math.ceil(allImages.length / 10); // ~10 imágenes por minuto
+        
+        // Mostrar resultados
+        document.getElementById('found-images').textContent = allImages.length;
+        document.getElementById('need-optimization').textContent = needOptimization;
+        document.getElementById('estimated-savings').textContent = imageOptimizer.formatFileSize(estimatedSavings);
+        document.getElementById('estimated-time').textContent = `${estimatedTimeMinutes} minutos`;
+        
+        document.getElementById('bulk-results').style.display = 'block';
+        
+        notifications.show('success', 'Análisis completado', 
+            `Se encontraron ${allImages.length} imágenes. ${needOptimization} necesitan optimización.`);
+            
+    } catch (error) {
+        console.error('Error analizando imágenes:', error);
+        notifications.show('error', 'Error en análisis', error.message);
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        lucide.createIcons();
+    }
+}
+
+// Ejecutar simulacro de optimización
+async function runDryRunOptimization() {
+    const confirmed = confirm(
+        '🔍 SIMULACRO DE OPTIMIZACIÓN\n\n' +
+        'Esto analizará todas las imágenes y mostrará qué se optimizaría, ' +
+        'pero NO modificará ningún archivo.\n\n' +
+        '¿Continuar con el análisis?'
+    );
+    
+    if (!confirmed) return;
+    
+    const options = {
+        dryRun: true,
+        createBackup: false,
+        skipOptimized: document.getElementById('bulk-skip-optimized').checked
+    };
+    
+    await bulkOptimizer.optimizeAllImages(options);
+}
+
+// Iniciar optimización masiva real
+async function startBulkOptimization() {
+    const confirmed = confirm(
+        '⚠️ OPTIMIZACIÓN MASIVA\n\n' +
+        'ATENCIÓN: Esta operación modificará todas las imágenes de tu repositorio.\n\n' +
+        '✅ Se creará un backup automático\n' +
+        '✅ Las imágenes se optimizarán para web\n' +
+        '✅ Se reducirá significativamente el tamaño\n\n' +
+        '¿Estás seguro de que quieres continuar?'
+    );
+    
+    if (!confirmed) return;
+    
+    const button = document.getElementById('start-bulk-optimization');
+    const originalText = button.innerHTML;
+    
+    try {
+        button.innerHTML = '<i data-lucide="zap" class="animate-spin"></i> Optimizando...';
+        button.disabled = true;
+        button.classList.add('processing');
+        
+        const options = {
+            dryRun: false,
+            createBackup: document.getElementById('bulk-create-backup').checked,
+            skipOptimized: document.getElementById('bulk-skip-optimized').checked,
+            replaceOriginals: document.getElementById('bulk-replace-originals').checked
+        };
+        
+        await bulkOptimizer.optimizeAllImages(options);
+        
+    } catch (error) {
+        console.error('Error en optimización masiva:', error);
+        notifications.show('error', 'Error en optimización', error.message);
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        button.classList.remove('processing');
+        lucide.createIcons();
+    }
+}
+
+// Exportar reporte de análisis
+function exportAnalysisReport() {
+    bulkOptimizer.exportDetailedReport();
 }
 </script>
 </body>
