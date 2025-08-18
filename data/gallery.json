@@ -43,6 +43,14 @@
       "description": "Participantes siguiendo atentamente las presentaciones técnicas."
     },
     {
+      "id": "6",
+      "src": "contact/mining-engineer-woman.png",
+      "alt": "Ingeniera de minas",
+      "category": "evento",
+      "title": "Diversidad en la Minería",
+      "description": "Profesionales de todas las áreas participando en el evento."
+    },
+    {
       "id": "7",
       "src": "highlights/panel-discussion.jpg",
       "alt": "Panel de discusión",
@@ -57,6 +65,22 @@
       "category": "keynotes",
       "title": "Dra. Alessandra Silva",
       "description": "Keynote: \"Innovación y Sostenibilidad en la Minería del Futuro\""
+    },
+    {
+      "id": "9",
+      "src": "keynotes/keynote-alexander.png",
+      "alt": "Keynote Alexander",
+      "category": "keynotes",
+      "title": "Dr. Alexander Torres",
+      "description": "Keynote: \"Transformación Digital en Operaciones Mineras\""
+    },
+    {
+      "id": "10",
+      "src": "keynotes/keynote-cleber.png",
+      "alt": "Keynote Cleber",
+      "category": "keynotes",
+      "title": "Ing. Cleber Rodríguez",
+      "description": "Keynote: \"Automatización y Robótica en la Industria Minera\""
     },
     {
       "id": "11",
@@ -89,14 +113,6 @@
       "category": "keynotes",
       "title": "Ing. Leonardo Vargas",
       "description": "Keynote: \"IoT y Sensores Inteligentes en Minería\""
-    },
-    {
-      "id": "15",
-      "src": "keynotes/keynote-osvaldo.png",
-      "alt": "Keynote Osvaldo",
-      "category": "keynotes",
-      "title": "Dr. Osvaldo Herrera",
-      "description": "Keynote: \"Minería Espacial: El Futuro de la Extracción\""
     },
     {
       "id": "16",
@@ -161,6 +177,14 @@
       "category": "testimonios",
       "title": "Yair González",
       "description": "\"Networking invaluable con profesionales de toda Latinoamérica\""
+    },
+    {
+      "id": "24",
+      "src": "about/evento-whatsapp-image-2025-08-12-at-1-1755530323286.jpeg",
+      "alt": "prueba",
+      "category": "evento",
+      "title": "Prueba de optimizacion",
+      "description": "prueba"
     }
   ]
 }
