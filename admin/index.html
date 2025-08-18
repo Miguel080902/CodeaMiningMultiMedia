@@ -148,6 +148,20 @@
                             <span class="stat-label">Ponentes</span>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <i data-lucide="zap"></i>
+                        <div>
+                            <span class="stat-number" id="optimized-count">0</span>
+                            <span class="stat-label">Optimizadas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i data-lucide="hard-drive"></i>
+                        <div>
+                            <span class="stat-number" id="saved-space">0 KB</span>
+                            <span class="stat-label">Espacio Ahorrado</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="gallery-grid" class="gallery-grid">
@@ -175,6 +189,29 @@
                             <button type="button" id="remove-image" class="btn-remove">
                                 <i data-lucide="x"></i>
                             </button>
+                        </div>
+                        <div id="optimization-preview" class="optimization-preview" style="display: none;">
+                            <div class="optimization-header">
+                                <h4><i data-lucide="zap"></i> Optimización de Imagen</h4>
+                            </div>
+                            <div class="optimization-content">
+                                <div class="optimization-item">
+                                    <span class="label">Tamaño original:</span>
+                                    <span id="original-size">-</span>
+                                </div>
+                                <div class="optimization-item">
+                                    <span class="label">Dimensiones:</span>
+                                    <span id="original-dimensions">-</span>
+                                </div>
+                                <div class="optimization-item">
+                                    <span class="label">¿Necesita optimización?</span>
+                                    <span id="needs-optimization" class="status">-</span>
+                                </div>
+                                <div class="optimization-item estimated" style="display: none;">
+                                    <span class="label">Reducción estimada:</span>
+                                    <span id="estimated-reduction">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -264,6 +301,70 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <h3>Optimización de Imágenes</h3>
+                    <div class="optimization-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <input type="checkbox" id="enable-optimization" checked>
+                                Activar optimización automática
+                            </label>
+                            <small>Las imágenes se optimizarán automáticamente al subirlas</small>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>Calidad de compresión (0.1 - 1.0)</label>
+                            <div class="range-input">
+                                <input type="range" id="compression-quality" min="0.1" max="1.0" step="0.05" value="0.85">
+                                <span id="quality-value">0.85</span>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>Ancho máximo (px)</label>
+                            <input type="number" id="max-width" value="1200" min="300" max="3000" step="50">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>Alto máximo (px)</label>
+                            <input type="number" id="max-height" value="1200" min="300" max="3000" step="50">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>Formato de salida</label>
+                            <select id="output-format">
+                                <option value="webp">WebP (recomendado)</option>
+                                <option value="jpeg">JPEG</option>
+                                <option value="png">PNG</option>
+                                <option value="auto">Automático</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                <input type="checkbox" id="create-thumbnails" checked>
+                                Crear miniaturas automáticamente
+                            </label>
+                            <small>Genera versiones pequeñas para carga rápida</small>
+                        </div>
+                    </div>
+                    
+                    <div class="optimization-actions">
+                        <button id="test-optimization" class="btn-secondary">
+                            <i data-lucide="test-tube"></i>
+                            Probar Configuración
+                        </button>
+                        <button id="reset-optimization" class="btn-secondary">
+                            <i data-lucide="rotate-ccw"></i>
+                            Restablecer
+                        </button>
+                        <button id="save-optimization" class="btn-primary">
+                            <i data-lucide="save"></i>
+                            Guardar Configuración
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -317,5 +418,104 @@
     <script src="js/api.js"></script>
     <script src="js/gallery.js"></script>
     <script src="js/app.js"></script>
+    <script>
+// Inicializar configuración de optimización cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    initOptimizationSettings();
+});
+
+function initOptimizationSettings() {
+    // Cargar configuración guardada
+    loadOptimizationSettings();
+    
+    // Event listeners para los controles
+    document.getElementById('compression-quality').addEventListener('input', function(e) {
+        document.getElementById('quality-value').textContent = e.target.value;
+    });
+    
+    document.getElementById('save-optimization').addEventListener('click', saveOptimizationSettings);
+    document.getElementById('reset-optimization').addEventListener('click', resetOptimizationSettings);
+    document.getElementById('test-optimization').addEventListener('click', testOptimizationSettings);
+    
+    // Actualizar configuración en tiempo real
+    const inputs = ['enable-optimization', 'compression-quality', 'max-width', 'max-height', 'output-format', 'create-thumbnails'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', updateOptimizerSettings);
+        }
+    });
+}
+
+function loadOptimizationSettings() {
+    const saved = localStorage.getItem('optimization-settings');
+    if (saved) {
+        const settings = JSON.parse(saved);
+        
+        document.getElementById('enable-optimization').checked = settings.enabled !== false;
+        document.getElementById('compression-quality').value = settings.quality || 0.85;
+        document.getElementById('quality-value').textContent = settings.quality || 0.85;
+        document.getElementById('max-width').value = settings.maxWidth || 1200;
+        document.getElementById('max-height').value = settings.maxHeight || 1200;
+        document.getElementById('output-format').value = settings.format || 'webp';
+        document.getElementById('create-thumbnails').checked = settings.createThumbnails !== false;
+        
+        updateOptimizerSettings();
+    }
+}
+
+function saveOptimizationSettings() {
+    const settings = {
+        enabled: document.getElementById('enable-optimization').checked,
+        quality: parseFloat(document.getElementById('compression-quality').value),
+        maxWidth: parseInt(document.getElementById('max-width').value),
+        maxHeight: parseInt(document.getElementById('max-height').value),
+        format: document.getElementById('output-format').value,
+        createThumbnails: document.getElementById('create-thumbnails').checked
+    };
+    
+    localStorage.setItem('optimization-settings', JSON.stringify(settings));
+    updateOptimizerSettings();
+    notifications.show('success', 'Configuración guardada', 'Las configuraciones de optimización se han guardado.');
+}
+
+function resetOptimizationSettings() {
+    localStorage.removeItem('optimization-settings');
+    
+    // Restablecer valores por defecto
+    document.getElementById('enable-optimization').checked = true;
+    document.getElementById('compression-quality').value = 0.85;
+    document.getElementById('quality-value').textContent = '0.85';
+    document.getElementById('max-width').value = 1200;
+    document.getElementById('max-height').value = 1200;
+    document.getElementById('output-format').value = 'webp';
+    document.getElementById('create-thumbnails').checked = true;
+    
+    updateOptimizerSettings();
+    notifications.show('info', 'Configuración restablecida', 'Se han restaurado los valores por defecto.');
+}
+
+function updateOptimizerSettings() {
+    const format = document.getElementById('output-format').value;
+    
+    imageOptimizer.updateSettings({
+        maxWidth: parseInt(document.getElementById('max-width').value),
+        maxHeight: parseInt(document.getElementById('max-height').value),
+        quality: parseFloat(document.getElementById('compression-quality').value),
+        format: format === 'auto' ? imageOptimizer.getOptimalFormat() : format,
+        enableResize: document.getElementById('enable-optimization').checked,
+        enableCompression: document.getElementById('enable-optimization').checked,
+        createThumbnail: document.getElementById('create-thumbnails').checked
+    });
+}
+
+function testOptimizationSettings() {
+    notifications.show('info', 'Configuración actual', 
+        `Formato: ${imageOptimizer.getSettings().format.toUpperCase()}, ` +
+        `Calidad: ${(imageOptimizer.getSettings().quality * 100).toFixed(0)}%, ` +
+        `Dimensiones máx: ${imageOptimizer.getSettings().maxWidth}x${imageOptimizer.getSettings().maxHeight}px`
+    );
+}
+</script>
 </body>
 </html>

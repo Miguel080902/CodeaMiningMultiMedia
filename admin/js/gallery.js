@@ -1,4 +1,4 @@
-// Gestión de la Galería
+// Gestión de la Galería - VERSIÓN ACTUALIZADA CON OPTIMIZACIÓN
 class GalleryManager {
     constructor() {
         this.galleryData = null;
@@ -48,7 +48,11 @@ class GalleryManager {
                 alt: imageData.alt,
                 category: imageData.category,
                 title: imageData.title,
-                description: imageData.description || ''
+                description: imageData.description || '',
+                // Agregar metadatos de optimización
+                optimized: imageData.optimized || false,
+                originalSize: imageData.originalSize || null,
+                compressionRatio: imageData.compressionRatio || null
             };
 
             this.galleryData.images.push(newImage);
@@ -138,34 +142,82 @@ class GalleryManager {
         }
     }
 
-    // Subir nueva imagen completa
+    // Subir nueva imagen completa CON OPTIMIZACIÓN
     async uploadNewImage(file, metadata) {
         try {
-            // Validaciones
+            // Validaciones iniciales
             if (!githubAPI.isValidImageFormat(file)) {
                 throw new Error('Formato de imagen no válido. Use JPG, PNG o WebP.');
             }
 
-            if (!githubAPI.isValidFileSize(file, 5)) {
-                throw new Error('El archivo es demasiado grande. Máximo 5MB.');
+            if (!githubAPI.isValidFileSize(file, 10)) { // Aumentamos a 10MB porque optimizaremos
+                throw new Error('El archivo es demasiado grande. Máximo 10MB.');
             }
 
-            // Generar nombre único
-            const filename = githubAPI.generateUniqueFilename(file.name, metadata.category);
+            // Mostrar información de análisis
+            notifications.show('info', 'Analizando imagen', 'Analizando la imagen antes de optimizar...');
+            
+            const analysis = await imageOptimizer.analyzeImage(file);
+            console.log('Análisis de imagen:', analysis);
+
+            let finalFile = file;
+            let optimizationInfo = null;
+
+            // Optimizar imagen si es necesario
+            if (analysis.needsOptimization) {
+                notifications.show('info', 'Optimizando imagen', 'Optimizando imagen para web...');
+                
+                const optimizationResult = await imageOptimizer.optimizeImage(file, {
+                    format: imageOptimizer.getOptimalFormat()
+                });
+
+                // Crear archivo optimizado
+                const extension = optimizationResult.format === 'webp' ? 'webp' : 'jpg';
+                const optimizedFilename = file.name.replace(/\.[^/.]+$/, `.${extension}`);
+                
+                finalFile = imageOptimizer.blobToFile(
+                    optimizationResult.optimizedBlob,
+                    optimizedFilename,
+                    `image/${optimizationResult.format}`
+                );
+
+                optimizationInfo = {
+                    optimized: true,
+                    originalSize: optimizationResult.originalSize,
+                    optimizedSize: optimizationResult.optimizedSize,
+                    compressionRatio: optimizationResult.compressionRatio,
+                    originalDimensions: `${analysis.dimensions.width}x${analysis.dimensions.height}`,
+                    optimizedDimensions: `${optimizationResult.dimensions.width}x${optimizationResult.dimensions.height}`
+                };
+
+                notifications.show('success', 'Optimización completada', 
+                    `Imagen optimizada: ${optimizationInfo.compressionRatio}% de reducción (${imageOptimizer.formatFileSize(optimizationInfo.originalSize)} → ${imageOptimizer.formatFileSize(optimizationInfo.optimizedSize)})`
+                );
+            } else {
+                notifications.show('info', 'Imagen ya optimizada', 'La imagen no requiere optimización adicional.');
+                optimizationInfo = {
+                    optimized: false,
+                    originalSize: file.size
+                };
+            }
+
+            // Generar nombre único para el archivo final
+            const filename = githubAPI.generateUniqueFilename(finalFile.name, metadata.category);
             const folder = this.getCategoryFolder(metadata.category);
 
-            // Subir archivo
-            notifications.show('info', 'Subiendo imagen', 'Por favor espera mientras se sube la imagen...');
+            // Subir archivo optimizado
+            notifications.show('info', 'Subiendo imagen', 'Subiendo imagen optimizada al servidor...');
             
-            const uploadResult = await githubAPI.uploadImage(file, folder, filename);
+            const uploadResult = await githubAPI.uploadImage(finalFile, folder, filename);
 
-            // Agregar a la galería
+            // Agregar a la galería con información de optimización
             const imageData = {
                 src: `${folder}/${filename}`,
                 alt: metadata.alt,
                 category: metadata.category,
                 title: metadata.title,
-                description: metadata.description
+                description: metadata.description,
+                ...optimizationInfo
             };
 
             await this.addImage(imageData);
@@ -173,7 +225,8 @@ class GalleryManager {
             return {
                 success: true,
                 image: imageData,
-                url: uploadResult.url
+                url: uploadResult.url,
+                optimization: optimizationInfo
             };
         } catch (error) {
             console.error('Error subiendo nueva imagen:', error);
@@ -239,6 +292,15 @@ class GalleryManager {
         const ponentes = this.galleryData.images.filter(img => img.category === 'ponentes').length;
         const testimonios = this.galleryData.images.filter(img => img.category === 'testimonios').length;
 
+        // Estadísticas de optimización
+        const optimizedImages = this.galleryData.images.filter(img => img.optimized).length;
+        const totalSavedBytes = this.galleryData.images
+            .filter(img => img.optimized && img.originalSize && img.compressionRatio)
+            .reduce((total, img) => {
+                const savedBytes = img.originalSize * (parseFloat(img.compressionRatio) / 100);
+                return total + savedBytes;
+            }, 0);
+
         document.getElementById('total-images').textContent = total;
         document.getElementById('evento-count').textContent = evento;
         document.getElementById('keynotes-count').textContent = keynotes;
@@ -249,9 +311,20 @@ class GalleryManager {
         if (testimoniosElement) {
             testimoniosElement.textContent = testimonios;
         }
+
+        // Mostrar estadísticas de optimización si existen elementos
+        const optimizedElement = document.getElementById('optimized-count');
+        if (optimizedElement) {
+            optimizedElement.textContent = optimizedImages;
+        }
+
+        const savedSpaceElement = document.getElementById('saved-space');
+        if (savedSpaceElement) {
+            savedSpaceElement.textContent = imageOptimizer.formatFileSize(totalSavedBytes);
+        }
     }
 
-    // Renderizar galería
+    // Renderizar galería con información de optimización
     renderGallery() {
         const galleryGrid = document.getElementById('gallery-grid');
         if (!galleryGrid) return;
@@ -268,26 +341,39 @@ class GalleryManager {
             return;
         }
 
-        galleryGrid.innerHTML = this.filteredImages.map(image => `
-            <div class="gallery-item" data-id="${image.id}">
-                <div class="gallery-item-image">
-                    <img src="${this.getImageUrl(image.src)}" alt="${image.alt}" loading="lazy">
-                    <div class="gallery-item-category">${this.getCategoryName(image.category)}</div>
-                    <div class="gallery-item-actions">
-                        <button class="action-btn edit" onclick="gallery.editImage('${image.id}')" title="Editar">
-                            <i data-lucide="edit-2"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="gallery.deleteImage('${image.id}')" title="Eliminar">
-                            <i data-lucide="trash-2"></i>
-                        </button>
+        galleryGrid.innerHTML = this.filteredImages.map(image => {
+            const optimizationBadge = image.optimized ? 
+                `<div class="optimization-badge" title="Imagen optimizada - ${image.compressionRatio}% de reducción">
+                    <i data-lucide="zap"></i>
+                </div>` : '';
+
+            return `
+                <div class="gallery-item" data-id="${image.id}">
+                    <div class="gallery-item-image">
+                        <img src="${this.getImageUrl(image.src)}" alt="${image.alt}" loading="lazy">
+                        <div class="gallery-item-category">${this.getCategoryName(image.category)}</div>
+                        ${optimizationBadge}
+                        <div class="gallery-item-actions">
+                            <button class="action-btn edit" onclick="gallery.editImage('${image.id}')" title="Editar">
+                                <i data-lucide="edit-2"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="gallery.deleteImage('${image.id}')" title="Eliminar">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="gallery-item-content">
+                        <h3 class="gallery-item-title">${image.title}</h3>
+                        <p class="gallery-item-description">${image.description || 'Sin descripción'}</p>
+                        ${image.optimized ? `
+                            <div class="optimization-info">
+                                <small>Optimizada: ${image.compressionRatio}% reducción</small>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
-                <div class="gallery-item-content">
-                    <h3 class="gallery-item-title">${image.title}</h3>
-                    <p class="gallery-item-description">${image.description || 'Sin descripción'}</p>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Re-inicializar iconos de Lucide
         lucide.createIcons();
@@ -381,6 +467,21 @@ class GalleryManager {
         link.click();
         
         notifications.show('success', 'Backup creado', 'El archivo de respaldo se ha descargado correctamente.');
+    }
+
+    // Re-optimizar imagen existente
+    async reoptimizeImage(id) {
+        try {
+            const image = this.galleryData.images.find(img => img.id === id);
+            if (!image) throw new Error('Imagen no encontrada');
+
+            // Esto requeriría descargar la imagen actual, optimizarla y volver a subirla
+            // Es más complejo y requiere consideraciones adicionales
+            notifications.show('info', 'Función en desarrollo', 'La re-optimización de imágenes existentes estará disponible próximamente.');
+        } catch (error) {
+            console.error('Error re-optimizando imagen:', error);
+            notifications.show('error', 'Error re-optimizando', error.message);
+        }
     }
 }
 
