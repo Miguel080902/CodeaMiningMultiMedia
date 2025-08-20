@@ -79,7 +79,7 @@
       "src": "speakers/speaker-leonardo.webp",
       "alt": "Speaker Leonardo",
       "category": "ponentes",
-      "title": "Ing. Leonardo Castro",
+      "title": "Ing. Leonardo Almeyda Tejada",
       "description": "Consultor en Optimización de Operaciones",
       "optimized": true
     },
@@ -93,20 +93,11 @@
       "optimized": true
     },
     {
-      "id": "21",
-      "src": "testimonial/testimonial-catherine.webp",
-      "alt": "Testimonio Catherine",
-      "category": "testimonios",
-      "title": "Catherine Williams",
-      "description": "\"Una experiencia transformadora para mi carrera en minería\"",
-      "optimized": true
-    },
-    {
       "id": "22",
       "src": "testimonial/testimonial-luis.webp",
       "alt": "Testimonio Luis",
       "category": "testimonios",
-      "title": "Luis Martinez",
+      "title": "Luis Fernández",
       "description": "\"Excelente oportunidad para conocer las últimas tendencias\"",
       "optimized": true
     },
