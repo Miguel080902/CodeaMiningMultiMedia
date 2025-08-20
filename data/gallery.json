@@ -23,10 +23,10 @@
     {
       "id": "3",
       "src": "about/about-3.webp",
-      "alt": "Presentación en vivo",
+      "alt": "Conexi�n",
       "category": "evento",
       "title": "Presentaciones Magistrales",
-      "description": "Expertos compartiendo las últimas tendencias en tecnología minera.",
+      "description": "Participantes del evento disfrutando del backing de fotos",
       "optimized": true
     },
     {
@@ -118,17 +118,6 @@
       "title": "Yair González",
       "description": "\"Networking invaluable con profesionales de toda Latinoamérica\"",
       "optimized": true
-    },
-    {
-      "id": "24",
-      "src": "about/evento-whatsapp-image-2025-08-19-at-3-1755699309957.webp",
-      "alt": "prueba",
-      "category": "evento",
-      "title": "Prueba de optimizacion",
-      "description": "prueba de imagen",
-      "optimized": true,
-      "originalSize": 215012,
-      "compressionRatio": "66.1"
     }
   ]
 }
