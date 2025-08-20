@@ -77,10 +77,10 @@
     {
       "id": "19",
       "src": "speakers/speaker-leonardo.webp",
-      "alt": "Speaker Leonardo",
+      "alt": "Leonardo Almeyda Tejada",
       "category": "ponentes",
       "title": "Leonardo Almeyda Tejada",
-      "description": "Consultor en OptimizaciÃ³n de Operaciones",
+      "description": "Ingeniero de Innovación & Transformación Digital - Nexa Resources",
       "optimized": true
     },
     {
@@ -95,10 +95,10 @@
     {
       "id": "22",
       "src": "testimonial/testimonial-luis.webp",
-      "alt": "Testimonio Luis",
+      "alt": "Luis Martinez",
       "category": "testimonios",
-      "title": "Luis FernÃ¡ndez",
-      "description": "\"Excelente oportunidad para conocer las Ãºltimas tendencias\"",
+      "title": "Luis Martinez",
+      "description": "Asociado Estratégico IMSS-Consultores",
       "optimized": true
     },
     {
