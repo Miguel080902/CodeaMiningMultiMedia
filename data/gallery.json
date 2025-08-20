@@ -50,7 +50,7 @@
     {
       "id": "16",
       "src": "speakers/speaker-christa.webp",
-      "alt": "Speaker Christa",
+      "alt": "Christa Quiroz Cotrina",
       "category": "ponentes",
       "title": "Christa Quiroz Cotrina",
       "description": "Ingeniera en Minas | Lider de planificación, supervisión y desarrollo de planes mineros",
@@ -109,6 +109,17 @@
       "title": "Yair Camborda",
       "description": "\"Networking invaluable con profesionales de toda LatinoamÃ©rica\"",
       "optimized": true
+    },
+    {
+      "id": "24",
+      "src": "about/evento-dsc00097-1755729364248.webp",
+      "alt": "Apertura del evento CODEa Mining Fest",
+      "category": "evento",
+      "title": "Apertura del evento CODEa Mining Fest",
+      "description": "",
+      "optimized": true,
+      "originalSize": 1509500,
+      "compressionRatio": "94.7"
     }
   ]
 }
