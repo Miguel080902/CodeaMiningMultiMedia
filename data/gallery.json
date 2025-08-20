@@ -16,17 +16,17 @@
       "src": "about/about-2.webp",
       "alt": "Asistentes del evento",
       "category": "evento",
-      "title": "Data Driven Mining",
+      "title": "Audiencia Comprometida",
       "description": "Más de 500 asistentes participando activamente en las conferencias.",
       "optimized": true
     },
     {
       "id": "3",
       "src": "about/about-3.webp",
-      "alt": "Conexi�n",
+      "alt": "Presentación en vivo",
       "category": "evento",
       "title": "Presentaciones Magistrales",
-      "description": "Participantes del evento disfrutando del backing de fotos",
+      "description": "Expertos compartiendo las últimas tendencias en tecnología minera.",
       "optimized": true
     },
     {
@@ -115,7 +115,7 @@
       "src": "testimonial/testimonial-yair.webp",
       "alt": "Testimonio Yair",
       "category": "testimonios",
-      "title": "Yair González",
+      "title": "Yair Camborda",
       "description": "\"Networking invaluable con profesionales de toda Latinoamérica\"",
       "optimized": true
     }
